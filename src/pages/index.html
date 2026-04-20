@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RepresentaBOT</title>
+    <link rel="shortcut icon" href="favicon.svg" type="image/svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #8b5cf6;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transition: var(--transition);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .theme-btn {
+            background: none; border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 8px 12px; border-radius: 10px; cursor: pointer; transition: var(--transition);
+        }
+        .theme-btn:hover { background: var(--border-color); }
+
+        .input-group { margin-bottom: 16px; }
+        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); }
+        input, select {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);
+            background: var(--input-bg); color: var(--text-main); font-size: 15px; transition: var(--transition);
+        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+
+        .btn {
+            padding: 12px 20px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer;
+            transition: var(--transition); display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; padding: 16px; color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 16px; border-top: 1px solid var(--border-color); }
+        tr:hover td { background: rgba(99, 102, 241, 0.03); }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: var(--transition); }
+        .overlay.active { opacity: 1; pointer-events: all; }
+        .modal { background: var(--card-bg); width: 90%; max-width: 450px; border-radius: 20px; padding: 32px; transform: scale(0.9); transition: var(--transition); }
+        .overlay.active .modal { transform: scale(1); }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+        .stat-card { padding: 16px; border-radius: 12px; background: var(--bg-color); border: 1px solid var(--border-color); }
+        .stat-val { font-size: 24px; font-weight: 700; color: var(--primary); }
+
+        footer { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body data-theme="light">
+
+<div class="container">
+    <header>
+        <div>
+            <h2 id="greeting">Bem-vindo</h2>
+            <p style="color: var(--text-muted); font-size: 14px;">Gerenciamento da Sala do Futuro</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="theme-btn" onclick="toggleTheme()" title="Trocar Tema">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button class="btn btn-ghost" id="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </header>
+
+    <div id="login-view" class="card" style="max-width: 400px; margin: 0 auto;">
+        <h3 style="margin-bottom: 20px;">Acessar Painel</h3>
+        <div class="input-group">
+            <label>Registro Acadêmico (RA)</label>
+            <input type="text" id="rep-ra" placeholder="0000000000sp">
+        </div>
+        <div class="input-group">
+            <label>Senha</label>
+            <input type="password" id="rep-pwd" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="realizarLogin()">
+            Entrar no Sistema <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <div id="dashboard-view" class="hidden">
+        <div class="card" style="background: linear-gradient(135deg, #6366f110, #8b5cf610);">
+            <h4 style="margin-bottom: 12px;"><i class="fas fa-school"></i> Minhas Salas</h4>
+            <div id="lista-salas" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+        </div>
+
+        <div class="card">
+            <h4 id="form-title" style="margin-bottom: 20px;">Adicionar Novo Aluno</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end;">
+                <div class="input-group" style="margin:0">
+                    <label>RA do Aluno</label>
+                    <input type="text" id="aluno-ra">
+                </div>
+                <div class="input-group" style="margin:0">
+                    <label>Senha do Aluno</label>
+                    <input type="password" id="aluno-pwd">
+                </div>
+                <div class="input-group" style="margin:0">
+                    <label>Sala Destino</label>
+                    <select id="aluno-sala"></select>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" onclick="adicionarOuAtualizarAluno()" id="btn-salvar">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="btn btn-ghost hidden" id="btn-cancelar" onclick="cancelarEdicao()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <input type="hidden" id="edit-mode" value="false">
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h4>Alunos Cadastrados</h4>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-ghost" onclick="exportarDados()"><i class="fas fa-download"></i></button>
+                    <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()"><i class="fas fa-upload"></i></button>
+                    <input type="file" id="import-file" class="hidden" accept=".json" onchange="importarDados(event)">
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>RA do Aluno</th>
+                            <th>Sala Alocada</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; junin anti-cmsp &bull; 2026
+    </footer>
+</div>
+
+<div class="overlay" id="overlay" onclick="fecharModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+        <h3 id="modal-aluno-nome" style="margin-bottom: 4px;">Nome do Aluno</h3>
+        <p id="modal-aluno-ra" style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">RA: 0000000000sp</p>
+        
+        <div class="stat-card" style="margin-bottom: 16px; text-align: center;">
+            <p style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Frequência Geral</p>
+            <div class="stat-val" id="frequencia-status">0%</div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <p style="font-size: 11px; color: var(--text-muted);">PENDENTES</p>
+                <div class="stat-val" id="count-pending" style="color: #f59e0b;">0</div>
+            </div>
+            <div class="stat-card">
+                <p style="font-size: 11px; color: var(--text-muted);">EXPIRADAS</p>
+                <div class="stat-val" id="count-expired" style="color: var(--danger);">0</div>
+            </div>
+        </div>
+        
+        <button class="btn btn-ghost" style="width: 100%; margin-top: 24px; justify-content: center;" onclick="fecharModal()">
+            Fechar Detalhes
+        </button>
+    </div>
+</div>
+
+<script>
+    let representanteAtual = null;
+    let temaAtual = localStorage.getItem('tema') || 'light';
+    let alunosSalvos = JSON.parse(localStorage.getItem('sala_futuro_alunos')) || [];
+
+    function toggleTheme() {
+        const body = document.body;
+        const isDark = body.getAttribute('data-theme') === 'dark';
+        body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        const icon = document.querySelector('.theme-btn i');
+        icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+        localStorage.setItem('tema', isDark ? 'light' : 'dark');
+    }
+
+    window.onload = () => {
+        const session = JSON.parse(localStorage.getItem('rep_session'));
+        if (session && (new Date().getTime() - session.timestamp < 30 * 24 * 60 * 60 * 1000)) {
+            representanteAtual = session.data;
+            iniciarDashboard();
+        }
+
+        if (temaAtual !== 'light') toggleTheme();
+    };
+
+    async function realizarLogin() {
+        const ra = document.getElementById('rep-ra').value;
+        const pwd = document.getElementById('rep-pwd').value;
+        if(!ra || !pwd) return;
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ra, pwd})
+            });
+            const dados = await res.json();
+            if(dados.error) throw new Error(dados.error);
+
+            representanteAtual = dados;
+            localStorage.setItem('rep_session', JSON.stringify({ timestamp: new Date().getTime(), data: dados }));
+            iniciarDashboard();
+        } catch(e) { alert(e.message); }
+    }
+
+    function iniciarDashboard() {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('dashboard-view').classList.remove('hidden');
+        document.getElementById('greeting').innerText = `Olá, ${representanteAtual.name.split(' ')[0]}!`;
+        
+        const select = document.getElementById('aluno-sala');
+        const lista = document.getElementById('lista-salas');
+        select.innerHTML = ''; lista.innerHTML = '';
+
+        representanteAtual.rooms.forEach(r => {
+            lista.innerHTML += `<span style="padding: 4px 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; font-size: 12px; font-weight: 500;">${r.name}</span>`;
+            select.innerHTML += `<option value="${r.id}">${r.name}</option>`;
+        });
+        renderizarTabela();
+    }
+
+    function renderizarTabela() {
+        const tbody = document.getElementById('corpo-tabela');
+        tbody.innerHTML = alunosSalvos.map(a => `
+            <tr>
+                <td style="font-weight: 600; font-family: monospace;">${a.ra}</td>
+                <td style="color: var(--text-muted); font-size: 14px;">${a.roomId}</td>
+                <td style="text-align: right;">
+                    <button class="btn btn-ghost" style="padding: 6px 10px" onclick="editarAluno('${a.ra}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-ghost" style="padding: 6px 10px; color: var(--danger)" onclick="deletarAluno('${a.ra}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-primary" style="padding: 6px 10px" onclick="verificarDesempenho('${a.ra}', '${a.pwd}')"><i class="fas fa-chart-simple"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function adicionarOuAtualizarAluno() {
+        const ra = document.getElementById('aluno-ra').value;
+        const pwd = document.getElementById('aluno-pwd').value;
+        const roomId = document.getElementById('aluno-sala').value;
+        const isEdit = document.getElementById('edit-mode').value === "true";
+
+        if(!ra || !pwd) return;
+
+        if(isEdit) {
+            const idx = alunosSalvos.findIndex(x => x.ra === ra);
+            alunosSalvos[idx] = { ra, pwd, roomId };
+        } else {
+            alunosSalvos.push({ ra, pwd, roomId });
+        }
+        
+        localStorage.setItem('sala_futuro_alunos', JSON.stringify(alunosSalvos));
+        cancelarEdicao();
+        renderizarTabela();
+    }
+
+    function editarAluno(ra) {
+        const a = alunosSalvos.find(x => x.ra === ra);
+        document.getElementById('aluno-ra').value = a.ra;
+        document.getElementById('aluno-ra').disabled = true;
+        document.getElementById('aluno-pwd').value = a.pwd;
+        document.getElementById('aluno-sala').value = a.roomId;
+        document.getElementById('edit-mode').value = "true";
+        document.getElementById('btn-salvar').innerHTML = '<i class="fas fa-check"></i>';
+        document.getElementById('btn-cancelar').classList.remove('hidden');
+    }
+
+    function cancelarEdicao() {
+        document.getElementById('aluno-ra').value = "";
+        document.getElementById('aluno-ra').disabled = false;
+        document.getElementById('aluno-pwd').value = "";
+        document.getElementById('edit-mode').value = "false";
+        document.getElementById('btn-salvar').innerHTML = '<i class="fas fa-plus"></i>';
+        document.getElementById('btn-cancelar').classList.add('hidden');
+    }
+
+    function deletarAluno(ra) {
+        if(confirm('Remover aluno?')) {
+            alunosSalvos = alunosSalvos.filter(x => x.ra !== ra);
+            localStorage.setItem('sala_futuro_alunos', JSON.stringify(alunosSalvos));
+            renderizarTabela();
+        }
+    }
+
+    async function verificarDesempenho(ra, pwd) {
+        const overlay = document.getElementById('overlay');
+        overlay.classList.add('active');
+        
+        try {
+            const res = await fetch(`/api/student?ra=${ra}&pwd=${pwd}`);
+            const d = await res.json();
+            if(d.error) throw new Error(d.error);
+
+            document.getElementById('modal-aluno-nome').innerText = d.user.name;
+            document.getElementById('modal-aluno-ra').innerText = `RA: ${ra}`;
+            document.getElementById('frequencia-status').innerText = d.frequency.frequencyPercentage + '%';
+            document.getElementById('count-pending').innerText = d.tasks.pendingCount;
+            document.getElementById('count-expired').innerText = d.tasks.expiredCount;
+        } catch(e) { 
+            alert(e.message);
+            fecharModal();
+        }
+    }
+
+    function fecharModal() { document.getElementById('overlay').classList.remove('active'); }
+    function logout() { localStorage.removeItem('rep_session'); location.reload(); }
+    
+    function exportarDados() {
+        const blob = new Blob([JSON.stringify(alunosSalvos)], {type: 'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'alunos.json'; a.click();
+    }
+    
+    function importarDados(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => { 
+            alunosSalvos = JSON.parse(ev.target.result); 
+            localStorage.setItem('sala_futuro_alunos', JSON.stringify(alunosSalvos));
+            renderizarTabela();
+        };
+        reader.readAsText(e.target.files[0]);
+    }
+</script>
+</body>
+</html>
