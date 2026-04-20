@@ -1,6 +1,9 @@
 # RepresentaBOT
 RepresentaBOT é uma plataforma que automatiza e facilita o acesso aos dados dos alunos da sala para o representante de classe.
 
+## Detalhes
+o front-end foi vibe-coded enquanto o back-end foi inteiramente desenvolvido por mim ;)
+
 ## Features
 - Gerenciamento de alunos por escola e sala
 - Verificação de desempenho dos alunos
